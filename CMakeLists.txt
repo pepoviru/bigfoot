@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 
 ########################################################################################
 # Configure options
+option(WITH_TOOLS "Enable tools support" ON)
+option(WITH_MPI "Enable MPI support" OFF)
 
 EXEC_PROGRAM( git ARGS describe --abbrev=0 --tags OUTPUT_VARIABLE VER_STR)
 string(REPLACE "." ";" VER_LIST ${VER_STR})
