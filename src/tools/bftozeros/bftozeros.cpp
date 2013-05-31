@@ -1,4 +1,4 @@
-#include "../bigfoot.hpp"
+#include <bigfoot/bigfoot.hpp>
 #include <iostream>
 #include <armadillo>
 #include <time.h>
@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 using namespace bigfoot;
 
 	if (argc <7){
-		std::cout << "Usage: bigfoot file nrows ncols numofmappedelements offset fromsample tosample" <<std::endl;
+		std::cout << "Usage: bftozeros file nrows ncols numofmappedelements offset fromsample tosample" <<std::endl;
 		return -1;
 	}
 
@@ -26,9 +26,9 @@ using namespace bigfoot;
  	double val;
 	for(std::size_t j=fromsample;j<tosample;++j){
 		for(std::size_t i=0;i<nrows;++i){
-			val = bf(i,j);
-			++val;
-			//val = 0;
+			//val = bf(i,j);
+			//++val;
+			val = 0;
 			bf(i,j,val);
 		}
 	}
