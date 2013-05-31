@@ -1,4 +1,4 @@
-#include "../bigfoot.hpp"
+#include <bigfoot/bigfoot.hpp>
 #include <iostream>
 #include <armadillo>
 #include <time.h>
@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 using namespace bigfoot;
 
 	if (argc <7){
-		std::cout << "Usage: bigfoot file nrows ncols numofmappedelements offset fromsample tosample" <<std::endl;
+		std::cout << "Usage: bfprint file nrows ncols numofmappedelements offset fromsample tosample" <<std::endl;
 		return -1;
 	}
 

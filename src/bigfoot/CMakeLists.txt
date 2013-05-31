@@ -4,9 +4,7 @@ SET(BIGFOOT_SRCS
 
 IF( NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" )
 	# Base
-	#install(DIRECTORY . DESTINATION include/bigfoot/ FILES_MATCHING PATTERN "*.hpp" PATTERN "formats" EXCLUDE)
 	install(DIRECTORY . DESTINATION include/bigfoot/ FILES_MATCHING PATTERN "*.hpp")
-
 ENDIF()
 
 if(UNIX)
@@ -32,7 +30,7 @@ if(WITH_SHARED)
 		set_target_properties(bigfoot PROPERTIES OUTPUT_NAME bigfoot)
 	ENDIF()
 
-	target_link_libraries(bigfoot ${BIGFOOT_LIBRARIES}
+	target_link_libraries(bigfoot ${BIGFOOT_LIBRARIES})
 
 	if(WIN32)
 		install(TARGETS bigfoot RUNTIME DESTINATION lib)

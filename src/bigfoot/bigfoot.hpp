@@ -9,8 +9,8 @@
  * based on boost file memory-mapping
  */
 
-#ifndef BIGFOOT_CONFIG_JVR_2013_05_31
-#define BIGFOOT_CONFIG_JVR_2013_05_31
+#ifndef BIGFOOT_BIGFOOT_JVR_2013_05_31
+#define BIGFOOT_BIGFOOT_JVR_2013_05_31 1
 
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <armadillo>
@@ -94,3 +94,4 @@ namespace bigfoot {
 }
 
 /*! @} End of Doxygen Groups*/
+#endif
