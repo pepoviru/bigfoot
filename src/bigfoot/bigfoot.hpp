@@ -82,6 +82,7 @@ namespace bigfoot {
 			 *
 			 */
 			bufferedfile(std::string filename, std::size_t nrows, std::size_t ncols, std::size_t nmappedelements=0, std::size_t offset=0);
+			~bufferedfile();
 			/*! get current loaded page index */
 			std::size_t page() const; 
 			/*! set \a value of the element at (\a row,\a col) */

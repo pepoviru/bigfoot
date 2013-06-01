@@ -50,7 +50,15 @@ namespace bigfoot {
 			_nmappedelements = (_pagesizeinbytes) / _elementsize;
 		}
 		_filename = filename;
+		//std::cout << "Element size in bytes: " << _elementsize << endl;
+		//std::cout << "Actual pagesize in elements(bytes): " << _nmappedelements << "(" << _pagesizeinbytes << ")" << endl;
 		populatecache(0);
+	}
+
+	bufferedfile::~bufferedfile(){
+		if (_file.is_open()){
+			_file.close();
+		}
 	}
 
 	void bufferedfile::populatecache(std::size_t pageidx){
@@ -59,23 +67,31 @@ namespace bigfoot {
 		}
 		//request one extra 4*aligment page to avoid data elements missalignment caused by the initial offset size
 		std::size_t pagetrail = 4 * boost::iostreams::mapped_file::alignment();
-			//std::cout << "requested page #: " << pageidx << std::endl;
-		_file.open(_filename, ios::out | ios::binary, (_pagesizeinbytes + pagetrail), pageidx*_pagesizeinbytes) ;
+		//std::cout << "requested page #: " << pageidx << std::endl;
+		try {
+			_file.open(_filename, ios::out | ios::binary, (_pagesizeinbytes + pagetrail), pageidx*_pagesizeinbytes) ;
 
-		if (!_file.is_open()){
-			throw("Input file could not be mapped.");
-		}
-		_cachedpagenumber = pageidx;
-		if(pageidx>0){
-			_iocache = (double *)_file.data();
-			_pageinitaddress = pageidx * _nmappedelements;
-			_pageendaddress = _pageinitaddress + _nmappedelements - 1;
+			if (!_file.is_open()){
+				throw("Input file could not be mapped.");
+			}
 
-		} else {
-			//FIXME:
-			_iocache = (double *)_file.data() + _offset;
-			_pageinitaddress = 0;
-			_pageendaddress = _nmappedelements - 1;
+			//std::cout << "file reopened at requested page #: " << pageidx << std::endl;
+			_cachedpagenumber = pageidx;
+			if(pageidx>0){
+				_iocache = (double *)_file.data();
+				_pageinitaddress = pageidx * _nmappedelements;
+				_pageendaddress = _pageinitaddress + _nmappedelements - 1;
+
+			} else {
+				//FIXME:
+				_iocache = (double *)_file.data() + _offset;
+				_pageinitaddress = 0;
+				_pageendaddress = _nmappedelements - 1;
+			}
+			//std::cout << "data remapped to requested page #: " << pageidx << std::endl;
+		} catch(...){
+			std::cerr << "Error when loading page: " << pageidx << std::endl;
+			throw "bigfoot paging error.";
 		}
 	}
 
@@ -91,7 +107,13 @@ namespace bigfoot {
 			populatecache(elementaddress/_nmappedelements);
 		}
 		size_t elementpageaddress = elementaddress % _nmappedelements;
-		(*(_iocache + elementpageaddress))=value;
+		try 
+		{
+			(*(_iocache + elementpageaddress))=value;
+		}catch(...){
+			std::cerr << "Error updating element (" << row << ", " << col << ") at position " << elementaddress << " in page # " << _cachedpagenumber << " with value " << value << endl;
+			throw "bigfoot update element error.";
+		}
 	}
 
 	double bufferedfile::operator()(const std::size_t row, const std::size_t col) {
@@ -101,6 +123,7 @@ namespace bigfoot {
 			populatecache(elementaddress/_nmappedelements);
 		}
 		size_t elementpageaddress = elementaddress % _nmappedelements;
+		//std::cout << "reading element at (" << row << ", " << col << ") @" << elementaddress  << "from page: " << _cachedpagenumber << " at " << elementpageaddress << std::endl;
 		return (*(_iocache + elementpageaddress));
 	}
 	
