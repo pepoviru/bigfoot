@@ -18,7 +18,7 @@ using namespace bigfoot;
 	std::size_t fromsample = atoi(argv[6]);
 	std::size_t tosample = atoi(argv[7]);
 	double val = atof(argv[8]);
-	bigfoot::bufferedfile bf(argv[1], nrows, ncols, nummappedels, offset);
+	bigfoot::bufferedfile<double> bf(argv[1], nrows, ncols, nummappedels, offset);
 
 	//std::cout << "file,nrows,ncols,numelems,offset,from,to,start,stop,exect" << std::endl;
 	std::cout << argv[1] << "," << nrows << "," << ncols << "," << nummappedels << "," << offset << "," << fromsample << "," << tosample;

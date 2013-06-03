@@ -15,7 +15,7 @@ using namespace bigfoot;
 	std::size_t ncols = atoi(argv[3]);
 	std::size_t nummappedels = atoi(argv[4]);
 	std::size_t offset = atoi(argv[5]);
-	bigfoot::bufferedfile bf(argv[1], nrows, ncols, nummappedels, offset);
+	bigfoot::bufferedfile<double> bf(argv[1], nrows, ncols, nummappedels, offset);
 
 	std::cout << "First 5 samples of each row." << endl;
 	double val;
