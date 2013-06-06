@@ -77,7 +77,7 @@ namespace bigfoot {
 				std::size_t pagetrail = 4 * boost::iostreams::mapped_file::alignment();
 				//std::cout << "requested page #: " << pageidx << std::endl;
 				try {
-					_file.open(_filename, ios::out | ios::binary, (_pagesizeinbytes + pagetrail), _offset + pageidx*_pagesizeinbytes) ;
+					_file.open(_filename, ios::out | ios::binary, (_offset + _pagesizeinbytes + pagetrail), pageidx*_pagesizeinbytes) ;
 
 					if (!_file.is_open()){
 						throw("Input file could not be mapped.");
@@ -86,7 +86,7 @@ namespace bigfoot {
 					//std::cout << "file reopened at requested page #: " << pageidx << std::endl;
 					_cachedpagenumber = pageidx;
 					//if(pageidx>0){
-						_iocache = (myDataType *)_file.data();
+						_iocache = (myDataType *)_file.data() + _offset;
 						_pageinitaddress = pageidx * _nmappedelements;
 						_pageendaddress = _pageinitaddress + _nmappedelements - 1;
 
