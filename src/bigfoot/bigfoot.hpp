@@ -73,34 +73,16 @@ namespace bigfoot {
 				if (_file.is_open()){
 					_file.close();
 				}
-				//request one extra 4*aligment page to avoid data elements missalignment caused by the initial offset size
-				std::size_t pagetrail = 4 * boost::iostreams::mapped_file::alignment();
-				//std::cout << "requested page #: " << pageidx << std::endl;
-				try {
-					_file.open(_filename, ios::out | ios::binary, (_offset + _pagesizeinbytes + pagetrail), pageidx*_pagesizeinbytes) ;
+				_file.open(_filename, ios::out | ios::binary, (_offset + _pagesizeinbytes), pageidx*_pagesizeinbytes) ;
 
-					if (!_file.is_open()){
-						throw("Input file could not be mapped.");
-					}
-
-					//std::cout << "file reopened at requested page #: " << pageidx << std::endl;
-					_cachedpagenumber = pageidx;
-					//if(pageidx>0){
-						_iocache = (myDataType *)_file.data() + _offset;
-						_pageinitaddress = pageidx * _nmappedelements;
-						_pageendaddress = _pageinitaddress + _nmappedelements - 1;
-
-					//} else {
-						//FIXME:
-					//	_iocache = (myDataType *)_file.data() + _offset;
-					//	_pageinitaddress = 0;
-					//	_pageendaddress = _nmappedelements - 1;
-					//}
-					//std::cout << "data remapped to requested page #: " << pageidx << std::endl;
-				} catch(...){
-					std::cerr << "Error when loading page: " << pageidx << std::endl;
-					throw "bigfoot paging error.";
+				if (!_file.is_open()){
+					throw("Input file could not be mapped.");
 				}
+
+				_cachedpagenumber = pageidx;
+				_iocache = (myDataType *)(_file.data() + _offset);
+				_pageinitaddress = pageidx * _nmappedelements;
+				_pageendaddress = _pageinitaddress + _nmappedelements - 1;
 			};
 
 		public:
@@ -114,10 +96,6 @@ namespace bigfoot {
 			 *
 			 */
 			bufferedfile(std::string filename, std::size_t nrows, std::size_t ncols, std::size_t nmappedelements=0, std::size_t offset=0){
-				//nrows : number of rows of elements
-				//ncols : number of cols of elements
-				//pagesize: number of elements to be mapped
-				//offset: offset to data location in bytes (to skip file's header if necessary)
 				_nrows = nrows;
 				_ncols = ncols;
 				_elementsize = sizeof(myDataType);
@@ -130,8 +108,7 @@ namespace bigfoot {
 
 				_offset = offset;
 
-				//compute the minimum _pagesizeinbytes able to contain the _reqpagesie
-				//FIXME: review pagewidth for offsets computations (offset and element size)
+				//compute the minimum _pagesizeinbytes able to contain the _reqpagesize and is in compliance with alignment requirements
 				if ((_reqnmappedelements * _elementsize) % boost::iostreams::mapped_file::alignment() == 0){
 					_pagesizeinbytes = _reqnmappedelements * _elementsize;
 					_nmappedelements = _reqnmappedelements;
@@ -141,8 +118,6 @@ namespace bigfoot {
 					_nmappedelements = (_pagesizeinbytes) / _elementsize;
 				}
 				_filename = filename;
-				//std::cout << "Element size in bytes: " << _elementsize << endl;
-				//std::cout << "Actual pagesize in elements(bytes): " << _nmappedelements << "(" << _pagesizeinbytes << ")" << endl;
 				populatecache(0);
 			};
 				
@@ -162,7 +137,6 @@ namespace bigfoot {
 			/*! set \a value of the element at (\a row,\a col) */
 			void operator()(const std::size_t row, const std::size_t col, myDataType value){
 				std::size_t elementaddress = row + col*_nrows;
-				//std::size_t elementaddress = col + row*(_ncols-1);
 				if ((elementaddress > _pageendaddress) || (elementaddress < _pageinitaddress)){
 					populatecache(elementaddress/_nmappedelements);
 				}
@@ -172,19 +146,17 @@ namespace bigfoot {
 					(*(_iocache + elementpageaddress))=value;
 				}catch(...){
 					std::cerr << "Error updating element (" << row << ", " << col << ") at position " << elementaddress << " in page # " << _cachedpagenumber << " with value " << value << endl;
-					throw "bigfoot update element error.";
+					throw ("bigfoot update element error.");
 				}
 			};
 
 			/*! get \a value of element at (\a row,\a col) */
 			myDataType operator()(const std::size_t row, const std::size_t col){
 				std::size_t elementaddress = row + col*_nrows;
-				//std::size_t elementaddress = col + row*(_ncols-1);
 				if ((elementaddress > _pageendaddress) || (elementaddress < _pageinitaddress)){
 					populatecache(elementaddress/_nmappedelements);
 				}
 				size_t elementpageaddress = elementaddress % _nmappedelements;
-				//std::cout << "reading element at (" << row << ", " << col << ") @" << elementaddress  << "from page: " << _cachedpagenumber << " at " << elementpageaddress << std::endl;
 				return (*(_iocache + elementpageaddress));
 			};
 
