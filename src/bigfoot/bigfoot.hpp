@@ -73,10 +73,18 @@ namespace bigfoot {
 				if (_file.is_open()){
 					_file.close();
 				}
-				_file.open(_filename, ios::out | ios::binary, (_offset + _pagesizeinbytes), pageidx*_pagesizeinbytes) ;
+
+				int end = pageidx * _pagesizeinbytes + (_offset + _pagesizeinbytes);
+				int realend = (_nrows * _ncols * _elementsize) + _offset;
+				int read = _offset + _pagesizeinbytes;
+				if (end > realend) {
+					read = 0;
+				}
+
+				_file.open(_filename, ios::out | ios::binary, read, pageidx*_pagesizeinbytes) ;
 
 				if (!_file.is_open()){
-					throw("Input file could not be mapped.");
+					throw std::logic_error("Input file could not be mapped.");
 				}
 
 				_cachedpagenumber = pageidx;
@@ -117,6 +125,7 @@ namespace bigfoot {
 					_pagesizeinbytes = (prevmultiple + 1) * boost::iostreams::mapped_file::alignment();  
 					_nmappedelements = (_pagesizeinbytes) / _elementsize;
 				}
+
 				_filename = filename;
 				populatecache(0);
 			};
@@ -152,7 +161,7 @@ namespace bigfoot {
 
 			/*! get \a value of element at (\a row,\a col) */
 			myDataType operator()(const std::size_t row, const std::size_t col){
-				std::size_t elementaddress = row + col*_nrows;
+				std::size_t elementaddress = col + row*_ncols;
 				if ((elementaddress > _pageendaddress) || (elementaddress < _pageinitaddress)){
 					populatecache(elementaddress/_nmappedelements);
 				}
