@@ -161,7 +161,7 @@ namespace bigfoot {
 
 			/*! get \a value of element at (\a row,\a col) */
 			myDataType operator()(const std::size_t row, const std::size_t col){
-				std::size_t elementaddress = col + row*_ncols;
+				std::size_t elementaddress = row + col*_nrows;
 				if ((elementaddress > _pageendaddress) || (elementaddress < _pageinitaddress)){
 					populatecache(elementaddress/_nmappedelements);
 				}
